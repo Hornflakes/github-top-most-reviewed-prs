@@ -1,6 +1,6 @@
 # github-top-most-reviewed-prs
 
-Wanna see who makes it to Hall of Fame of the most reviewed PRs in your repository?
+Wanna see who makes it to the Hall of Fame of the most reviewed PRs in your repository?
 
 You came to the right place!
 

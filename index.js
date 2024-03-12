@@ -61,7 +61,7 @@ const getTopMostReviewedPrs = async (topCount = 10) => {
             }
         }
 
-        console.log(`Top ${topCount} reviewed PRs in ${owner}/${repo}:`);
+        console.log(`Top ${topCount} most reviewed PRs in ${owner}/${repo}:`);
         topMostReviewedPrs.forEach((pr) => {
             console.log(
                 `#${pr.number} by ${pr.user} - ${pr.commentsCount} comments @ \x1b[34m${pr.url}\x1b[0m`
