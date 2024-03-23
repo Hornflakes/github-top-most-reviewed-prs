@@ -6,8 +6,8 @@ const headers = {
     Authorization: `token ${pat}`,
 };
 
-const fetchAllPrs = async (url) => {
-    let prs = [];
+const fetchPaged = async (url) => {
+    let items = [];
     let next = true;
     let pageUrl = url;
 
@@ -17,25 +17,15 @@ const fetchAllPrs = async (url) => {
             throw new Error(`request error!, status: ${res.status}`);
         }
 
-        const pagePrs = await res.json();
-        prs = prs.concat(pagePrs);
+        const pageItems = await res.json();
+        items = items.concat(pageItems);
 
         const linkHeader = res.headers.get('link');
-        const matches = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+        const matches = linkHeader?.match(/<([^>]+)>;\s*rel="next"/);
         next = matches;
         pageUrl = matches && matches[1];
     }
-    return prs;
-};
-
-const fetchReviewCommentsCount = async (url) => {
-    const res = await fetch(url, { headers });
-    if (!res.ok) {
-        throw new Error(`request error!, status: ${res.status}`);
-    }
-
-    const comments = await res.json();
-    return comments.length;
+    return items;
 };
 
 const getTopMostReviewedPrs = async (topCount = 10) => {
@@ -43,10 +33,11 @@ const getTopMostReviewedPrs = async (topCount = 10) => {
 
     try {
         const prsUrl = `${apiUrl}/repos/${owner}/${repo}/pulls?state=all&per_page=100`;
-        const prs = await fetchAllPrs(prsUrl);
+        const prs = await fetchPaged(prsUrl);
 
         for (const pr of prs) {
-            const commentsCount = await fetchReviewCommentsCount(pr.review_comments_url);
+            const comments = await fetchPaged(`${pr.review_comments_url}?per_page=100`);
+            const commentsCount = comments.length;
             console.log(commentsCount);
 
             topMostReviewedPrs.push({
@@ -64,7 +55,9 @@ const getTopMostReviewedPrs = async (topCount = 10) => {
         console.log(`Top ${topCount} most reviewed PRs in ${owner}/${repo}:`);
         topMostReviewedPrs.forEach((pr, i) => {
             console.log(
-                `${i + 1}. #${pr.number} by ${pr.user} - ${pr.commentsCount} comments @ \x1b[34m${pr.url}\x1b[0m`
+                `${i + 1}. #${pr.number} by ${pr.user} - ${pr.commentsCount} comments @ \x1b[34m${
+                    pr.url
+                }\x1b[0m`,
             );
         });
     } catch (error) {
